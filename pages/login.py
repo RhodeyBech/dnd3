@@ -48,18 +48,8 @@ with st.form("login_form"):
         # Entrada
         if st.form_submit_button("Entrar", use_container_width=True):
             placeholder_login.warning("Entrando...")
-
-            # Login provisório
-            st.session_state["username"] = "admin"
-            st.session_state["group_id"] = 1
-            st.session_state["access_level_id"] = 1
-            st.session_state["is_logged"] = True
-            st.session_state["theme"] = "Padrão"
-            st.switch_page("pages/home.py")
-            # Login provisório
-
-            # if fn.check_login(username, password):
-            #     st.switch_page("pages/home.py")
-            # else:
-            #     placeholder_login.error("Usuário e/ou senha inválidos.")
-            #     st.session_state["is_logged"] = False
+            if fn.check_login(username, password):
+                st.switch_page("pages/home.py")
+            else:
+                placeholder_login.error("Usuário e/ou senha inválidos.")
+                st.session_state["is_logged"] = False

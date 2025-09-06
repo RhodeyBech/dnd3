@@ -111,7 +111,6 @@ if option == "logout":
     del st.session_state["home_menu"]
     del st.session_state["is_logged"]
     st.switch_page("pages/login.py")
-    # st.switch_page("pages/login")
 
 # Alterar Senha
 if option == "change_password":
@@ -134,15 +133,15 @@ if option == "change_password":
                 if new_password_1 == new_password_2:
                     try:
                         # Obtém conexão ao banco
-                        engine = fn.get_pd_connection()
+                        engine = fn.get_db_conn_dnd()
 
                         with engine.begin() as cn:
                             query = sa.text("""
-                                UPDATE Nexus.auth.Users
+                                UPDATE dnd3.auth.user
                                     SET
-                                        PasswordHash = :password
+                                        password_hash = :password
                                     WHERE
-                                        Username = :username
+                                        username = :username
                             """)
                             result = cn.execute(query, {
                                 "password": fn.hash_password(new_password_1)
@@ -158,6 +157,7 @@ if option == "change_password":
                                 st.rerun()
                             else:
                                 st.error("Erro ao alterar senha.")
+                                st.stop()
 
                     except Exception as e:
                         st.error(f"Erro ao alterar senha: {e}")
@@ -172,134 +172,134 @@ if option == "change_password":
             st.rerun()
 
 
-col8, col9, col10 = st.columns([4, 4, 12])
-with col8:
-    fn.shift_top(8)
-    st.subheader("Acesso Rápido")
-    # Intranet
-    st.markdown("""
-        <a href="https://webapp395138.ip-97-107-134-242.cloudezapp.io" target="_blank" style="display: inline-flex; align-items: center; text-decoration: none;">
-        <img src="https://www.csg.com.br/build/assets/favicon-c752c7b3.png" width="16" style="margin-right: 8px;">
-        Intranet - CSG
-        </a>
-    """, unsafe_allow_html=True)
-    st.markdown("\n")
-    # Zendesk
-    st.markdown("""
-        <a href="https://csg-concessionaria.zendesk.com/hc/pt-br" target="_blank" style="display: inline-flex; align-items: center; text-decoration: none;">
-        <img src="https://csg-concessionaria.zendesk.com/hc/theming_assets/01JKTWRF5DWYEYT4E2MXDNWWCX" width="16" style="margin-right: 8px;">
-        Zendesk - Central de Ajuda
-        </a>
-    """, unsafe_allow_html=True)
-    st.markdown("\n")
-    # Senior
-    st.markdown("""
-        <a href="https://web02s1p.seniorcloud.com.br:31051/gestaoponto-frontend/login" target="_blank" style="display: inline-flex; align-items: center; text-decoration: none;">
-        <img src="https://web02s1p.seniorcloud.com.br:31051/gestaoponto-frontend/favicon.png" width="16" style="margin-right: 8px;">
-        Senior
-        </a>
-    """, unsafe_allow_html=True)
-    st.markdown("\n")
-    # Scoreplan
-    st.markdown("""
-        <a href="https://app.scoreplan.com.br/login" target="_blank" style="display: inline-flex; align-items: center; text-decoration: none;">
-        <img src="https://app.scoreplan.com.br/mask-icon.png" width="16" style="margin-right: 8px;">
-        Scoreplan
-        </a>
-    """, unsafe_allow_html=True)
-    st.markdown("\n")
-    # kapsch
-    st.markdown("""
-        <a href="https://front.operian.csg.com.br" target="_blank" style="display: inline-flex; align-items: center; text-decoration: none;">
-        <img src="https://logodix.com/logo/2016268.png" width="16" style="margin-right: 8px;">
-        kapsch - Operacional
-        </a>
-    """, unsafe_allow_html=True)
-    st.markdown("\n")
-    # InteropFlex
-    st.markdown("""
-        <a href="https://app.ifx.operian.csg.com.br/#/login?returnUrl=%2Fhome" target="_blank" style="display: inline-flex; align-items: center; text-decoration: none;">
-        <img src="https://logodix.com/logo/2016268.png" width="16" style="margin-right: 8px;">
-        kapsch - InteropFlex
-        </a>
-    """, unsafe_allow_html=True)
-    st.markdown("\n")
-    # Attri
-    st.markdown("""
-        <a href="https://painel.freeflow.csg.com.br/login" target="_blank" style="display: inline-flex; align-items: center; text-decoration: none;">
-        <img src="https://painel.freeflow.csg.com.br/favicon.ico" width="16" style="margin-right: 8px;">
-        Attri - Painel Administrativo
-        </a>
-    """, unsafe_allow_html=True)
-    st.markdown("\n")
-    # Autolist
-    st.markdown("""
-        <a href="http://10.0.50.101:8080/ConsultaVeiculos" target="_blank" style="display: inline-flex; align-items: center; text-decoration: none;">
-        <img src="https://scontent.fpoa2-1.fna.fbcdn.net/v/t39.30808-6/303614908_103085555878187_1574554606710422950_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=3q1bHa4el3UQ7kNvwHS8epk&_nc_oc=Adl1bxZDE5GzmLKBE9X3PCrhNQv_xne9aha2mxYaHUodX6d3z5kG4y3Cwz4TThX6q4E&_nc_zt=23&_nc_ht=scontent.fpoa2-1.fna&_nc_gid=Vnglxx20xw3VWTt-juXNzw&oh=00_AfRgf8KpGv_-N3d2k04oV_184WjiprU7xuAy0pHYvlqK3g&oe=6885CA5D" width="16" style="margin-right: 8px;">
-        Autolist - Consulta Veículos
-        </a>
-    """, unsafe_allow_html=True)
-    st.markdown("\n")
+# col8, col9, col10 = st.columns([4, 4, 12])
+# with col8:
+#     fn.shift_top(8)
+#     st.subheader("Acesso Rápido")
+#     # Intranet
+#     st.markdown("""
+#         <a href="https://webapp395138.ip-97-107-134-242.cloudezapp.io" target="_blank" style="display: inline-flex; align-items: center; text-decoration: none;">
+#         <img src="https://www.csg.com.br/build/assets/favicon-c752c7b3.png" width="16" style="margin-right: 8px;">
+#         Intranet - CSG
+#         </a>
+#     """, unsafe_allow_html=True)
+#     st.markdown("\n")
+#     # Zendesk
+#     st.markdown("""
+#         <a href="https://csg-concessionaria.zendesk.com/hc/pt-br" target="_blank" style="display: inline-flex; align-items: center; text-decoration: none;">
+#         <img src="https://csg-concessionaria.zendesk.com/hc/theming_assets/01JKTWRF5DWYEYT4E2MXDNWWCX" width="16" style="margin-right: 8px;">
+#         Zendesk - Central de Ajuda
+#         </a>
+#     """, unsafe_allow_html=True)
+#     st.markdown("\n")
+#     # Senior
+#     st.markdown("""
+#         <a href="https://web02s1p.seniorcloud.com.br:31051/gestaoponto-frontend/login" target="_blank" style="display: inline-flex; align-items: center; text-decoration: none;">
+#         <img src="https://web02s1p.seniorcloud.com.br:31051/gestaoponto-frontend/favicon.png" width="16" style="margin-right: 8px;">
+#         Senior
+#         </a>
+#     """, unsafe_allow_html=True)
+#     st.markdown("\n")
+#     # Scoreplan
+#     st.markdown("""
+#         <a href="https://app.scoreplan.com.br/login" target="_blank" style="display: inline-flex; align-items: center; text-decoration: none;">
+#         <img src="https://app.scoreplan.com.br/mask-icon.png" width="16" style="margin-right: 8px;">
+#         Scoreplan
+#         </a>
+#     """, unsafe_allow_html=True)
+#     st.markdown("\n")
+#     # kapsch
+#     st.markdown("""
+#         <a href="https://front.operian.csg.com.br" target="_blank" style="display: inline-flex; align-items: center; text-decoration: none;">
+#         <img src="https://logodix.com/logo/2016268.png" width="16" style="margin-right: 8px;">
+#         kapsch - Operacional
+#         </a>
+#     """, unsafe_allow_html=True)
+#     st.markdown("\n")
+#     # InteropFlex
+#     st.markdown("""
+#         <a href="https://app.ifx.operian.csg.com.br/#/login?returnUrl=%2Fhome" target="_blank" style="display: inline-flex; align-items: center; text-decoration: none;">
+#         <img src="https://logodix.com/logo/2016268.png" width="16" style="margin-right: 8px;">
+#         kapsch - InteropFlex
+#         </a>
+#     """, unsafe_allow_html=True)
+#     st.markdown("\n")
+#     # Attri
+#     st.markdown("""
+#         <a href="https://painel.freeflow.csg.com.br/login" target="_blank" style="display: inline-flex; align-items: center; text-decoration: none;">
+#         <img src="https://painel.freeflow.csg.com.br/favicon.ico" width="16" style="margin-right: 8px;">
+#         Attri - Painel Administrativo
+#         </a>
+#     """, unsafe_allow_html=True)
+#     st.markdown("\n")
+#     # Autolist
+#     st.markdown("""
+#         <a href="http://10.0.50.101:8080/ConsultaVeiculos" target="_blank" style="display: inline-flex; align-items: center; text-decoration: none;">
+#         <img src="https://scontent.fpoa2-1.fna.fbcdn.net/v/t39.30808-6/303614908_103085555878187_1574554606710422950_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=3q1bHa4el3UQ7kNvwHS8epk&_nc_oc=Adl1bxZDE5GzmLKBE9X3PCrhNQv_xne9aha2mxYaHUodX6d3z5kG4y3Cwz4TThX6q4E&_nc_zt=23&_nc_ht=scontent.fpoa2-1.fna&_nc_gid=Vnglxx20xw3VWTt-juXNzw&oh=00_AfRgf8KpGv_-N3d2k04oV_184WjiprU7xuAy0pHYvlqK3g&oe=6885CA5D" width="16" style="margin-right: 8px;">
+#         Autolist - Consulta Veículos
+#         </a>
+#     """, unsafe_allow_html=True)
+#     st.markdown("\n")
 
-with col9:
-    fn.shift_top(49)
-    # ConectCar
-    st.markdown("""
-        <a href="https://conveniado.conectcar.com/Autenticacao/Autenticar" target="_blank" style="display: inline-flex; align-items: center; text-decoration: none;">
-        <img src="https://cdn.conectcar.com/imagens/favicon.ico" width="16" style="margin-right: 8px;">
-        ConectCar
-        </a>
-    """, unsafe_allow_html=True)
-    st.markdown("\n")
-    # GreenPass
-    st.markdown("""
-        <a href="https://conveniado.greenpass.com.br/Account/Login" target="_blank" style="display: inline-flex; align-items: center; text-decoration: none;">
-        <img src="https://conveniado.greenpass.com.br/img/apple-icon-57x57.png" width="16" style="margin-right: 8px;">
-        GreenPass
-        </a>
-    """, unsafe_allow_html=True)
-    st.markdown("\n")
-    # Move Mais
-    st.markdown("""
-        <a href="https://pdcmm.movemais.com/login" target="_blank" style="display: inline-flex; align-items: center; text-decoration: none;">
-        <img src="https://pdcmm.movemais.com/favicon.ico" width="16" style="margin-right: 8px;">
-        Move Mais
-        </a>
-    """, unsafe_allow_html=True)
-    st.markdown("\n")
-    # Sem Parar
-    st.markdown("""
-        <a href="https://credenciados.semparar.com.br/login" target="_blank" style="display: inline-flex; align-items: center; text-decoration: none;">
-        <img src="https://credenciados.semparar.com.br/assets/favicon.png" width="16" style="margin-right: 8px;">
-        Sem Parar
-        </a>
-    """, unsafe_allow_html=True)
-    st.markdown("\n")
-    # Veloe
-    st.markdown("""
-        <a href="https://beta-portal-ec.veloe.com.br/portalec-shell-frt/login" target="_blank" style="display: inline-flex; align-items: center; text-decoration: none;">
-        <img src="https://beta-portal-ec.veloe.com.br/portalec-shell-frt/favicon.ico" width="16" style="margin-right: 8px;">
-        Veloe
-        </a>
-    """, unsafe_allow_html=True)
-    st.markdown("\n")
+# with col9:
+#     fn.shift_top(49)
+#     # ConectCar
+#     st.markdown("""
+#         <a href="https://conveniado.conectcar.com/Autenticacao/Autenticar" target="_blank" style="display: inline-flex; align-items: center; text-decoration: none;">
+#         <img src="https://cdn.conectcar.com/imagens/favicon.ico" width="16" style="margin-right: 8px;">
+#         ConectCar
+#         </a>
+#     """, unsafe_allow_html=True)
+#     st.markdown("\n")
+#     # GreenPass
+#     st.markdown("""
+#         <a href="https://conveniado.greenpass.com.br/Account/Login" target="_blank" style="display: inline-flex; align-items: center; text-decoration: none;">
+#         <img src="https://conveniado.greenpass.com.br/img/apple-icon-57x57.png" width="16" style="margin-right: 8px;">
+#         GreenPass
+#         </a>
+#     """, unsafe_allow_html=True)
+#     st.markdown("\n")
+#     # Move Mais
+#     st.markdown("""
+#         <a href="https://pdcmm.movemais.com/login" target="_blank" style="display: inline-flex; align-items: center; text-decoration: none;">
+#         <img src="https://pdcmm.movemais.com/favicon.ico" width="16" style="margin-right: 8px;">
+#         Move Mais
+#         </a>
+#     """, unsafe_allow_html=True)
+#     st.markdown("\n")
+#     # Sem Parar
+#     st.markdown("""
+#         <a href="https://credenciados.semparar.com.br/login" target="_blank" style="display: inline-flex; align-items: center; text-decoration: none;">
+#         <img src="https://credenciados.semparar.com.br/assets/favicon.png" width="16" style="margin-right: 8px;">
+#         Sem Parar
+#         </a>
+#     """, unsafe_allow_html=True)
+#     st.markdown("\n")
+#     # Veloe
+#     st.markdown("""
+#         <a href="https://beta-portal-ec.veloe.com.br/portalec-shell-frt/login" target="_blank" style="display: inline-flex; align-items: center; text-decoration: none;">
+#         <img src="https://beta-portal-ec.veloe.com.br/portalec-shell-frt/favicon.ico" width="16" style="margin-right: 8px;">
+#         Veloe
+#         </a>
+#     """, unsafe_allow_html=True)
+#     st.markdown("\n")
 
-with col10:
-    if st.session_state.get("group_id") ==1:
-        df_last_reset_cache_pd = fn.get_last_reset_cache_pd()
-        StartDatetime = pd.to_datetime(df_last_reset_cache_pd["StartDatetime"].iloc[0])
-        Runtime = df_last_reset_cache_pd["Runtime"].iloc[0]
-        Status = df_last_reset_cache_pd["Status"].iloc[0]
-        Message = df_last_reset_cache_pd["Message"].iloc[0]
-        Message = Message.split(".")[0]
-        if Message[-1:] != ".":
-            Message = f"{Message}."
-        # Mensagem
-        fn.shift_top(8)
-        st.subheader("Última Limpeza do Banco")
-        st.text(f"""
-            Início:\t\t\t\t\t\t{StartDatetime.strftime("%d/%m/%Y %H:%M:%S")}
-            Tempo de Execução:\t\t{Runtime}
-            Status:\t\t\t\t\t\t{Status}
-            Mensagem:\t\t\t\t{Message}
-        """)
+# with col10:
+#     if st.session_state.get("group_id") ==1:
+#         df_last_reset_cache_pd = fn.get_last_reset_cache_pd()
+#         StartDatetime = pd.to_datetime(df_last_reset_cache_pd["StartDatetime"].iloc[0])
+#         Runtime = df_last_reset_cache_pd["Runtime"].iloc[0]
+#         Status = df_last_reset_cache_pd["Status"].iloc[0]
+#         Message = df_last_reset_cache_pd["Message"].iloc[0]
+#         Message = Message.split(".")[0]
+#         if Message[-1:] != ".":
+#             Message = f"{Message}."
+#         # Mensagem
+#         fn.shift_top(8)
+#         st.subheader("Última Limpeza do Banco")
+#         st.text(f"""
+#             Início:\t\t\t\t\t\t{StartDatetime.strftime("%d/%m/%Y %H:%M:%S")}
+#             Tempo de Execução:\t\t{Runtime}
+#             Status:\t\t\t\t\t\t{Status}
+#             Mensagem:\t\t\t\t{Message}
+#         """)

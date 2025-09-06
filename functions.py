@@ -36,7 +36,7 @@ def update_status_runner01():
                 ,LastUpdate
             FROM Nexus.rpa.Bot
         """
-        df_status_runner01 = pd.read_sql(query_get_status_runner01, get_dnd_connection())
+        df_status_runner01 = pd.read_sql(query_get_status_runner01, get_db_conn_dnd())
         last_update = pd.to_datetime(df_status_runner01[df_status_runner01["BotName"] == "Runner01_PD"].iloc[0]["LastUpdate"])
         if last_update >= (dt.datetime.now() - dt.timedelta(minutes=6)):
             runner01_value = True
@@ -98,31 +98,30 @@ def print_console_log(messagem: str):
 # Verificar validade do login
 def check_login(arg_username, arg_password):
     try:
-        engine = get_dnd_connection()
+        engine = get_db_conn_dnd()
         with engine.connect() as conn:
             query = sa.text("""
                 SELECT
-                    Username
-                    ,PasswordHash
-                    ,GroupId
-                    ,AccessLevelId
-                    ,IsActive
-                    ,Theme
-                FROM Nexus.auth.Users
+                    username
+                    ,password_hash
+                    ,campaign_id
+                    ,access_level_id
+                    ,is_active
+                FROM dnd3.auth.user
                 WHERE
-                    Username = :username
+                    username = :username
             """)
             # Realiza consulta
             result = conn.execute(query, {"username": arg_username}).mappings().fetchone()
 
-        if result and result["IsActive"] == 1:
-            if result["PasswordHash"] == hash_password(arg_password):
+        if result and result["is_active"]:
+            print(hash_password(arg_password))
+            if result["password_hash"] == hash_password(arg_password):
                 # Salva dados na sessão
-                st.session_state["username"] = result["Username"]
-                st.session_state["group_id"] = result["GroupId"]
-                st.session_state["access_level_id"] = result["AccessLevelId"]
+                st.session_state["username"] = result["username"]
+                st.session_state["campaign_id"] = result["campaign_id"]
+                st.session_state["access_level_id"] = result["access_level_id"]
                 st.session_state["is_logged"] = True
-                st.session_state["theme"] = result["Theme"]
                 # save_data_localstorage()
                 return True
             else:
@@ -139,28 +138,28 @@ def check_login(arg_username, arg_password):
 # Recarrega dados do usuário ativo
 def reload_active_user():
     try:
-        engine = get_dnd_connection()
+        engine = get_db_conn_dnd()
         with engine.connect() as conn:
             query = sa.text("""
                 SELECT
-                    Id
-                    ,Username
-                    ,PasswordHash
-                    ,GroupId
-                    ,AccessLevelId
-                    ,IsActive
-                FROM Nexus.auth.Users
+                    id
+                    ,username
+                    ,password_hash
+                    ,campaign_id
+                    ,access_level_id
+                    ,is_active
+                FROM dnd3.auth.user
                 WHERE
                     Username = :username
             """)
             # Realiza consulta
             result = conn.execute(query, {"username": st.session_state.get("username")}).mappings().fetchone()
 
-        if result and result["IsActive"] == 1:
+        if result and result["is_active"] == 1:
             # Salva dados na sessão
             st.session_state["user_id"] = result["Id"]
-            st.session_state["group_id"] = result["GroupId"]
-            st.session_state["access_level_id"] = result["AccessLevelId"]
+            st.session_state["campaign_id"] = result["campaign_id"]
+            st.session_state["access_level_id"] = result["access_level_id"]
             st.session_state["is_logged"] = True
             # save_data_localstorage()
             return True
@@ -228,12 +227,12 @@ def load_sidebar():
     #     </style>
     # """, unsafe_allow_html=True)
     # Define o idioma da página como pt-BR
-    st.markdown("""
-        <meta http-equiv="Content-Language" content="pt-BR">
-        <script>
-            document.documentElement.lang = 'pt-BR';
-        </script>
-    """, unsafe_allow_html=True)
+    # st.markdown("""
+    #     <meta http-equiv="Content-Language" content="pt-BR">
+    #     <script>
+    #         document.documentElement.lang = 'pt-BR';
+    #     </script>
+    # """, unsafe_allow_html=True)
     if st.session_state.get("is_logged", False):
         st.markdown("""
             <style>
@@ -300,39 +299,42 @@ def load_sidebar():
             st.markdown("### Sistema pra gente jogar D&D 3.5")
 
         # Botões
-        bt_home = st.sidebar.button("Início", key="bt_home", use_container_width=True)
-        bt_reports = st.sidebar.button("Relatórios", key="bt_reports", use_container_width=True)
-        bt_power_bi = st.sidebar.button("Power BI", key="bt_power_bi", use_container_width=True)
+        bt_home = st.sidebar.button("Início", use_container_width=True, key="bt_home")
+        bt_grid = st.sidebar.button("Campo", use_container_width=True, key="bt_grid")
+        # bt_reports = st.sidebar.button("Relatórios", use_container_width=True, key="bt_reports")
+        # bt_power_bi = st.sidebar.button("Power BI", use_container_width=True, key="bt_power_bi")
 
-        bt_operations = st.sidebar.button("Operações", key="bt_operations", use_container_width=True)
-        if bt_operations and st.session_state.get("active_page") != "operations":
-            st.switch_page("pages/operations.py")
+        # bt_operations = st.sidebar.button("Operações", use_container_width=True, key="bt_operations")
+        # if bt_operations and st.session_state.get("active_page") != "operations":
+        #     st.switch_page("pages/operations.py")
 
-        # RPA
-        if st.session_state.get("access_level_id", 3) == 1:
-            bt_admin_panel = st.sidebar.button("RPA", key="bt_rpa", use_container_width=True)
-            if bt_admin_panel and st.session_state.get("active_page") != "rpa":
-                st.switch_page("pages/rpa.py")
+        # # RPA
+        # if st.session_state.get("access_level_id", 3) == 1:
+        #     bt_admin_panel = st.sidebar.button("RPA", use_container_width=True, key="bt_rpa")
+        #     if bt_admin_panel and st.session_state.get("active_page") != "rpa":
+        #         st.switch_page("pages/rpa.py")
 
-        # Hub de Parceiros
-        if st.session_state.get("access_level_id", 3) == 1 or st.session_state.get("group_id") == 9:
-            bt_admin_panel = st.sidebar.button("Hub de Parceiros", key="bt_partner_hub", use_container_width=True)
-            if bt_admin_panel and st.session_state.get("active_page") != "partner_hub":
-                st.switch_page("pages/partner_hub.py")
+        # # Hub de Parceiros
+        # if st.session_state.get("access_level_id", 3) == 1 or st.session_state.get("group_id") == 9:
+        #     bt_admin_panel = st.sidebar.button("Hub de Parceiros", use_container_width=True, key="bt_partner_hub")
+        #     if bt_admin_panel and st.session_state.get("active_page") != "partner_hub":
+        #         st.switch_page("pages/partner_hub.py")
 
-        # Painal Adm
-        if st.session_state.get("access_level_id", 3) <= 2:
-            bt_admin_panel = st.sidebar.button("Painel Administrativo", key="bt_admin_panel", use_container_width=True)
-            if bt_admin_panel and st.session_state.get("active_page") != "admin_panel":
-                st.switch_page("pages/admin_panel.py")
+        # # Painal Adm
+        # if st.session_state.get("access_level_id", 3) <= 2:
+        #     bt_admin_panel = st.sidebar.button("Painel Administrativo", use_container_width=True, key="bt_admin_panel")
+        #     if bt_admin_panel and st.session_state.get("active_page") != "admin_panel":
+        #         st.switch_page("pages/admin_panel.py")
 
         # Alterna página
         if bt_home and st.session_state.get("active_page") != "home":
             st.switch_page("pages/home.py")
-        elif bt_reports and st.session_state.get("active_page") != "reports":
-            st.switch_page("pages/reports.py")
-        elif bt_power_bi and st.session_state.get("active_page") != "power_bi":
-            st.switch_page("pages/power_bi.py")
+        elif bt_grid and st.session_state.get("active_page") != "grid":
+            st.switch_page("pages/grid.py")
+        # elif bt_reports and st.session_state.get("active_page") != "reports":
+        #     st.switch_page("pages/reports.py")
+        # elif bt_power_bi and st.session_state.get("active_page") != "power_bi":
+        #     st.switch_page("pages/power_bi.py")
     else:
         st.markdown("""
             <style>
@@ -562,8 +564,12 @@ def vertical_divider(px_height: int):
 
 # ||=== CONEXÕES ===========================================================================================================================||
 # Retorna conxão ao banco
-def get_dnd_connection():
-    engine = sa.create_engine("mssql+pyodbc://sa:Craft3.5%26@RODRIGO-LAPTOP/DND3?driver=ODBC+Driver+17+for+SQL+Server")
+def get_db_conn_dnd():
+    # engine = sa.create_engine("mssql+pyodbc://sa:Craft3.5%26@RODRIGO-LAPTOP/DND3?driver=ODBC+Driver+17+for+SQL+Server")
+    engine = sa.create_engine(
+        "postgresql+psycopg2://dnd3_user:GlcC7Rw59jupwNOMFkDDk3PBYiU8N5uL@dpg-d2u1n8ffte5s73an4lq0-a.oregon-postgres.render.com:5432/dnd3"
+        ,connect_args={"sslmode": "require"}  # Render exige SSL
+    )
     return engine
 
 # ||=== API ================================================================================================================================||
@@ -605,7 +611,7 @@ def get_csv_body_paid_passages_attri(open_passages_initial_date: dt.datetime, op
             AND "datetimeOccurrence"::DATE BETWEEN '{open_passages_initial_date.strftime('%Y-%m-%d')}' AND '{open_passages_end_date.strftime('%Y-%m-%d')}'
     """
     try:
-        df_csv_body_paid_passages = pd.read_sql(query, get_dnd_connection())
+        df_csv_body_paid_passages = pd.read_sql(query, get_db_conn_dnd())
         if not df_csv_body_paid_passages.empty:
             csv_body_paid_passages_double_quotes = df_csv_body_paid_passages.to_csv(index=False, sep=";", header=False, encoding="utf-8-sig")
             csv_body_paid_passages = csv_body_paid_passages_double_quotes.replace('"', '')
@@ -637,7 +643,7 @@ def discards_paid_passages(open_passages_initial_date: dt.datetime, open_passage
 # Cria Log de execução do discards_paid_passages
 def create_log_discards_paid_passages(initial_date: dt.datetime, end_date: dt.datetime, access_user: str, count_discarded: int, count_already_discarded: int, count_failed: int):
     print_console_log("Create log discards paid passages")
-    engine_pd = get_dnd_connection()
+    engine_pd = get_db_conn_dnd()
     with engine_pd.begin() as conn:
         insert_query = sa.text(f"""
             INSERT INTO Nexus.log.Operation_DiscardPaidPassages (

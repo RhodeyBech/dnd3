@@ -21,12 +21,10 @@ fn.alter_theme()
 # Identifica se o usuário está logado
 if not st.session_state.get("is_logged", False):
     st.switch_page("pages/login.py")
-    # st.switch_page("pages/login")
 
 # Proteger acesso
 if st.session_state.get("access_level_id") > 2:
     st.switch_page("pages/home.py")
-    # st.switch_page("pages/home")
 
 # Ajusta cabeçalho da página
 fn.hidden_header()
